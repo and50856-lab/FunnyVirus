@@ -32,14 +32,15 @@ public class MainActivity extends Activity {
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         maxVolumeLoop();
 
-        // Создаем интерфейс с картинкой prank.png на весь экран
+        // Создаем интерфейс с картинкой prank.jpg на весь экран
         FrameLayout root = new FrameLayout(this);
 
         ImageView image = new ImageView(this);
         image.setScaleType(ImageView.ScaleType.FIT_XY);
 
         try {
-            java.io.InputStream stream = getAssets().open("prank.png");
+            // ВАЖНО: здесь указан prank.jpg, чтобы файл успешно нашёлся в assets!
+            java.io.InputStream stream = getAssets().open("prank.jpg");
             Drawable drawable = Drawable.createFromStream(stream, null);
             image.setImageDrawable(drawable);
             stream.close();
