@@ -3,7 +3,8 @@ package com.funnyvirus;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
-import android.graphics.drawable.Drawable;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
@@ -34,13 +35,14 @@ public class MainActivity extends Activity {
         // Создаем корневой контейнер
         FrameLayout frameLayout = new FrameLayout(this);
 
-        // Картинка на весь экран из assets (prank.jpg)
+        // Картинка на весь экран из assets (prank.jpg) с надёжной загрузкой через BitmapFactory
         ImageView imageView = new ImageView(this);
         imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
         try {
             InputStream is = getAssets().open("prank.jpg");
-            Drawable drawable = Drawable.createFromStream(is, null);
-            imageView.setImageDrawable(drawable);
+            Bitmap bitmap = BitmapFactory.decodeStream(is);
+            imageView.setImageBitmap(bitmap);
+            is.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -75,7 +77,7 @@ public class MainActivity extends Activity {
             audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, maxVolume, 0);
         }
 
-        // Запускаем зацикленный звук из assets (prank.mp3)
+        // Запускаем зацикленный звук (новогоднюю песню) из assets (prank.mp3)
         try {
             mediaPlayer = new MediaPlayer();
             AssetFileDescriptor afd = getAssets().openFd("prank.mp3");
