@@ -3,6 +3,8 @@ package com.funnyvirus;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
@@ -13,6 +15,9 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 public class MainActivity extends Activity {
     private MediaPlayer mediaPlayer;
 
@@ -20,14 +25,14 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Жесткий полноэкранный режим поверх блокировки и вырезов экрана
+        // Полноэкранный режим поверх блокировки
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
                 WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
 
-        // Убираем системные панели (строку состояния и навигацию) навсегда
+        // Убираем системные панели навсегда (липкий полноэкран)
         View decorView = getWindow().getDecorView();
         int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN
                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
@@ -40,15 +45,19 @@ public class MainActivity extends Activity {
         // Создаем корневой контейнер
         FrameLayout frameLayout = new FrameLayout(this);
 
-        // Картинка яйца на весь экран из res/drawable/prank.jpg
+        // Картинка на весь экран ИМЕННО из папки assets (prank.jpg)
         ImageView imageView = new ImageView(this);
         imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
         
-        int imageId = getResources().getIdentifier("prank", "drawable", getPackageName());
-        if (imageId != 0) {
-            imageView.setImageResource(imageId);
-        } else {
-            imageView.setBackgroundColor(0xFFFF0000); // На всякий случай красный фон, если картинка потеряется
+        try {
+            InputStream is = getAssets().open("prank.jpg");
+            Bitmap bitmap = BitmapFactory.decodeStream(is);
+            imageView.setImageBitmap(bitmap);
+            is.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            // Если вдруг файл не найдет в assets, сделает красный фон, чтобы ты сразу понял
+            imageView.setBackgroundColor(0xFFFF0000);
         }
 
         FrameLayout.LayoutParams imageParams = new FrameLayout.LayoutParams(
@@ -74,14 +83,14 @@ public class MainActivity extends Activity {
 
         setContentView(frameLayout);
 
-        // Выкручиваем системную громкость на абсолютный максимум
+        // Выкручиваем громкость на максимум
         AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         if (audioManager != null) {
             int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
             audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, maxVolume, AudioManager.FLAG_SHOW_UI);
         }
 
-        // Запускаем зацикленную новогоднюю песню из assets/prank.mp3
+        // Запускаем зацикленную новогоднюю песню из assets (prank.mp3)
         try {
             mediaPlayer = new MediaPlayer();
             AssetFileDescriptor afd = getAssets().openFd("prank.mp3");
@@ -95,7 +104,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    // Возвращаем режим обратно, если пользователь случайно смахнул шторку
+    // Возвращаем полноэкранный режим при свайпах
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
@@ -112,10 +121,10 @@ public class MainActivity extends Activity {
         }
     }
 
-    // Блокируем системную кнопку «Назад»
+    // Блокируем кнопку «Назад»
     @Override
     public void onBackPressed() {
-        // Ничего не делает — ловушка глухая
+        // Ничего не делает
     }
 
     @Override
